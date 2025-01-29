@@ -1,0 +1,1 @@
+{"users": [{"name": "Luis ", "password": "1234", "permission": "escrita"}, {"name": "Luis", "password": "1234", "permission": "escrita"}], "storage": [[1, "produto 1 ", "111", 1, ">"], [2, "produto 2", "222", 1, ">"], [4, "produto 4", "1234555", 1, ">"], [5, "produto 5 ", "213fsdjn", 5, ">"]], "rootPassword": "1234"}
