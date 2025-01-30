@@ -22,7 +22,7 @@ class View(ViewAccessControl):
 
     def __init__(self, root, dataSource, onClose):
         self.usersManager = UserManager(dataSource["users"])
-        self.storage = Storage(dataSource["storage"])
+        self.storage = Storage(dataSource)
         self.rootPassword = dataSource["rootPassword"]
 
         self.onClose = onClose

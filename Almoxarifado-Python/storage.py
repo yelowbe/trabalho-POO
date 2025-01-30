@@ -4,12 +4,19 @@ from item import Item
 
 class Storage:
 
-    def __init__(self, storage=[]):
-        self.__items = storage
+    def __init__(self,  dataSource):
+        
+        self.__dataSource = dataSource 
+        self.__items = dataSource["storage"]
+        
         self.__currentIndex = (
-            storage[len(storage) - 1][0] + 1 if len(storage) > 0 else 1
+            dataSource["storage"][len(dataSource["storage"]) - 1][0] + 1 if len(dataSource["storage"]) > 0 else 1
         )
 
+    def __updateNumItens(self):
+        """Atualiza a quantidade de itens no dataSource"""
+        self.__dataSource["num_itens_storage"] = len(self.__items)
+    
     # decoradores
     def canEditProduct(func):
         def wrapper(self, id, name, description, quantity, action):
@@ -33,6 +40,7 @@ class Storage:
     def addProduct(self, *args, action):
         newProduct = Item(self.__currentIndex, *args, self.__items)
         self.__items.append(newProduct.toListable())
+        self.__updateNumItens()
         self.__currentIndex = self.__currentIndex + 1
         messagebox.showinfo("Sucesso", "Produto criado com sucesso!")
         action()
@@ -51,5 +59,6 @@ class Storage:
             (i for i, item in enumerate(self.__items) if item[1] == name), None
         )
         self.__items.pop(selectedIndex)
+        self.__updateNumItens()
         messagebox.showinfo("Sucesso", "Produto deletado com sucesso!")
         action()
