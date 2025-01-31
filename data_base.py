@@ -1,6 +1,6 @@
 import json
 import os
-from exception_data import ExceptionDataBase
+from exception import ExceptionDataBase
 
 
 class DataBase:

@@ -17,12 +17,12 @@ if __name__ == "__main__":
         dataSource["storage"] = []
     
     if not ("num_itens_storage" in dataSource):
-        dataSource["num_itens_storage"] = len(dataSource["storage"])
+        # Usando numpy para contar os itens do storage
+        dataSource["num_itens_storage"] = dataSource["storage"]
 
     if not ("rootPassword" in dataSource):
         dataSource["rootPassword"] = "1234"
     
-
     def onClose():
         db.save(FILE_PATH, dataSource)
 

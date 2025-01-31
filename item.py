@@ -1,23 +1,22 @@
 from tkinter import messagebox
-
+from exception import *
 
 class Item:
 
     def __init__(self, id, name, description, quantity, items):
         if len(name) == 0:
-            return messagebox.showerror("Erro", "Nome inválido")
-        elif quantity < 1 and not (type(quantity) == int):
-            return messagebox.showerror("Erro", "Quantidade inválida")
+            raise ExceptionInvalidName()
+        elif quantity < 1 or not (type(quantity) == int):
+            raise ExceptionInvalidQuantity()
         elif any(item[1] == name for item in items):
-            return messagebox.showerror("Erro", "Esse produto já existe")
+            raise ExceptionProductDuplicity()
         else:
             self.__id = id
             self.__name = name
             self.__description = description
             self.__quantity = quantity
             self.__items = items
-
-
+    
     @property
     def name(self):
         return self.__name

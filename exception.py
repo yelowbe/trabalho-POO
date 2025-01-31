@@ -24,7 +24,23 @@ class ExceptionDataBase(Exception):
             except TypeError as e:
                     raise TypeError(f"Erro ao ler o banco de dados: {e}") 
             
+class ExceptionInvalidName(Exception):
+    def __init__(self):
+        """Nome inserido é invalido"""
+        messagebox.showerror("Erro", "Nome inválido")
+
+class ExceptionInvalidQuantity(Exception):
+    def __init__(self):
+        """Quantidade inválida (< 0)"""
+        messagebox.showerror(f"Erro", "Quantidade é inválida")
+
+class ExceptionProductDuplicity():
+    def __init__(self):
+        """Produto Existente"""
+        messagebox.showerror("Erro", "Esse produto já existe")
+
         
+
         
                 
                 
