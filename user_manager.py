@@ -1,75 +1,72 @@
 from tkinter import messagebox
+from typing import List, Dict, Optional, Callable
 from user import User
 
 
 class UserManager:
-    def __init__(self, users=[]):
-        self.__users = users
-        self.authenticatedUser = None
+    def __init__(self, users: List[Dict[str, str]] = []) -> None:
+        self.__users: List[Dict[str, str]] = users
+        self.authenticatedUser: Optional[Dict[str, str]] = None
 
     # decoradores
-    def authenticateUser(func):
-        def wrapper(self, name, password, action):
-            # retorna o primeiro user da lista que atende à condição user["name"] == name.
-            # caso nenhum usuário seja encontrado, retorna None (definido como valor padrão).
-            user = next((user for user in self.__users if user["name"] == name), None)
+    def authenticateUser(func: Callable) -> Callable:
+        def wrapper(self: 'UserManager', name: str, password: str, action: Callable) -> Optional[bool]:
+            user: Optional[Dict[str, str]] = next((user for user in self.__users if user["name"] == name), None)
 
             if user:
                 if user["password"] == password:
                     return func(self, name, password, action)
                 else:
-                    return messagebox.showerror("Erro", "Nome ou Senha inválidos")
+                    messagebox.showerror("Erro", "Nome ou Senha inválidos")
+                    return None
             else:
-                return messagebox.showerror("Erro", "Nome ou Senha inválidos")
+                messagebox.showerror("Erro", "Nome ou Senha inválidos")
+                return None
 
         return wrapper
 
-    def canEditUser(func):
-        def wrapper(self, name, password, action):
-
+    def canEditUser(func: Callable) -> Callable:
+        def wrapper(self: 'UserManager', name: str, password: str, action: Callable) -> Optional[bool]:
             if len(name) == 0:
-                return messagebox.showerror("Erro", "Nome inválido")
+                messagebox.showerror("Erro", "Nome inválido")
+                return None
             elif len(password) == 0:
-                return messagebox.showerror("Erro", "Senha inválida")
+                messagebox.showerror("Erro", "Senha inválida")
+                return None
             elif any(user["name"] == name for user in self.__users):
                 if name != self.authenticatedUser["name"]:
-                    return messagebox.showerror("Erro", "Esse usuário já existe")
+                    messagebox.showerror("Erro", "Esse usuário já existe")
+                    return None
 
-            func(self, name, password, action)
+            return func(self, name, password, action)
 
         return wrapper
 
     # métodos
     @property
-    def users(self):
+    def users(self) -> List[Dict[str, str]]:
         return self.__users
 
-    def addUser(self, name, password, permission, action):
-        newUser = User(name, password, permission, self.__users)
+    def addUser(self, name: str, password: str, permission: str, action: Callable) -> None:
+        newUser: User = User(name, password, permission, self.__users)
         self.__users.append(newUser.toDict())
         messagebox.showinfo("Sucesso", "Usuário criado com sucesso!")
         action()
 
     @authenticateUser
-    def loginUser(self, name, password, action):
-        self.authenticatedUser = next(
-            (user for user in self.__users if user["name"] == name)
-        )
+    def loginUser(self, name: str, password: str, action: Callable) -> None:
+        self.authenticatedUser = next((user for user in self.__users if user["name"] == name))
         messagebox.showinfo("Sucesso", "Login realizado com sucesso!")
         action()
 
     @canEditUser
-    def editUser(self, name, password, action):
-        newAuthenticatedUser = self.authenticatedUser
+    def editUser(self, name: str, password: str, action: Callable) -> None:
+        newAuthenticatedUser: Dict[str, str] = self.authenticatedUser
         newAuthenticatedUser["name"] = name
         newAuthenticatedUser["password"] = password
 
-        authenticatedIndex = next(
-            (
-                i
-                for i, user in enumerate(self.__users)
-                if user["name"] == self.authenticatedUser["name"]
-            )
+        authenticatedIndex: int = next(
+            (i for i, user in enumerate(self.__users) if user["name"] == self.authenticatedUser["name"])
         )
         self.__users[authenticatedIndex] = newAuthenticatedUser
         self.authenticatedUser = newAuthenticatedUser
@@ -77,13 +74,9 @@ class UserManager:
         messagebox.showinfo("Sucesso", "Usuário editado com sucesso!")
         action()
 
-    def deleteUser(self, action):
-        authenticatedIndex = next(
-            (
-                i
-                for i, user in enumerate(self.__users)
-                if user["name"] == self.authenticatedUser["name"]
-            )
+    def deleteUser(self, action: Callable) -> None:
+        authenticatedIndex: int = next(
+            (i for i, user in enumerate(self.__users) if user["name"] == self.authenticatedUser["name"])
         )
         self.__users.pop(authenticatedIndex)
         self.authenticatedUser = None

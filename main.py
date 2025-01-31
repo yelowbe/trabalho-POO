@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from data_base import DataBase
 from view import View
+import numpy as np
 
 FILE_PATH = "data_base.json"
 
@@ -11,10 +12,10 @@ if __name__ == "__main__":
     dataSource = db.data
 
     if not ("users" in dataSource):
-        dataSource["users"] = []
+        dataSource["users"] = np.empty()
 
     if not ("storage" in dataSource):
-        dataSource["storage"] = []
+        dataSource["storage"] = np.empty()
     
     if not ("num_itens_storage" in dataSource):
         # Usando numpy para contar os itens do storage

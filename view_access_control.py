@@ -1,16 +1,16 @@
 from abc import ABC, abstractmethod
 from tkinter import simpledialog, messagebox
-
+from typing import Callable, Any, Tuple
 
 # Interface para controle de acesso
 class IAccessControl(ABC):
 
     @abstractmethod
-    def _verifyWritePermission(func):
+    def _verifyWritePermission(func: Callable[..., Any]) -> Callable[..., Any]:
         pass
 
     @abstractmethod
-    def _validateRootPassword(func):
+    def _validateRootPassword(func: Callable[..., Any]) -> Callable[..., Any]:
         pass
 
 

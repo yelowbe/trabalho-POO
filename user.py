@@ -1,59 +1,63 @@
 from tkinter import messagebox
-
+from typing import List, Dict, Optional
 
 class User:
-
-    def __init__(self, name, password, permission, usersList):
+    def __init__(self, name: str, password: str, permission: str, usersList: List[Dict[str, str]]) -> None:
         if len(name) == 0:
-            return messagebox.showerror("Erro", "Nome inválido")
+            messagebox.showerror("Erro", "Nome inválido")
+            return
         elif len(password) == 0:
-            return messagebox.showerror("Erro", "Senha inválida")
+            messagebox.showerror("Erro", "Senha inválida")
+            return
         elif any(user["name"] == name for user in usersList):
-            return messagebox.showerror("Erro", "Esse usuário já existe")
-        elif len(permission) == 0 or (
-            permission != "leitura" and permission != "escrita"
-        ):
-            return messagebox.showerror("Erro", "Permissão inválida")
+            messagebox.showerror("Erro", "Esse usuário já existe")
+            return
+        elif len(permission) == 0 or (permission != "leitura" and permission != "escrita"):
+            messagebox.showerror("Erro", "Permissão inválida")
+            return
         else:
-            self.__usersList = usersList
-            self.__name = name
-            self.__password = password
-            self.__permission = permission
+            self.__usersList: List[Dict[str, str]] = usersList
+            self.__name: str = name
+            self.__password: str = password
+            self.__permission: str = permission
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
 
     @name.setter
-    def name(self, value):
+    def name(self, value: str) -> None:
         if len(value) == 0:
-            return messagebox.showerror("Erro", "Nome inválido")
+            messagebox.showerror("Erro", "Nome inválido")
+            return
         elif any(user["name"] == value for user in self.__usersList):
-            return messagebox.showerror("Erro", "Esse usuário já existe")
+            messagebox.showerror("Erro", "Esse usuário já existe")
+            return
         else:
             self.__name = value
 
     @property
-    def password(self):
+    def password(self) -> str:
         return self.__password
 
     @password.setter
-    def password(self, value):
+    def password(self, value: str) -> None:
         if len(value) == 0:
-            return messagebox.showerror("Erro", "Senha inválida")
+            messagebox.showerror("Erro", "Senha inválida")
+            return
         else:
             self.__password = value
 
     @property
-    def permission(self):
+    def permission(self) -> str:
         return self.__permission
 
     @permission.setter
-    def permission(self, value):
+    def permission(self, value: str) -> None:
         if value == "leitura" or value == "escrita":
             self.__permission = value
 
-    def toDict(self):
+    def toDict(self) -> Dict[str, str]:
         return {
             "name": self.name,
             "password": self.password,
