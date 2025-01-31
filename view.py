@@ -6,6 +6,8 @@ from storage import Storage
 from user_manager import UserManager
 from view_access_control import ViewAccessControl
 
+from permissions_list import permissions
+
 # Hexadecimal das cores utilizadas
 black = "#00000f"
 white = "#feffff"
@@ -623,11 +625,7 @@ class View(ViewAccessControl):
             row=2, column=0, sticky="w", pady=15, padx=(40, 0)
         )
 
-        def generate_permissions():
-            yield "leitura"
-            yield "escrita"
-
-        options = list(generate_permissions())
+        options = permissions()
         comboPermission = ttk.Combobox(formMain, values=options)
         comboPermission.grid(row=2, column=1, pady=5, padx=10, sticky="w")
         comboPermission.set("Selecione uma opção")
