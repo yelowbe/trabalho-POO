@@ -32,14 +32,14 @@ class View(ViewAccessControl):
         self.root.geometry("1043x453")
         self.root.configure(background=white)
         self.root.resizable(width=False, height=False)
-        self.root.protocol("WM_DELETE_WINDOW", self.__closeWindow)
+        self.root.protocol("WM_DELETE_WINDOW", self._closeWindow)
 
     # métodos privados
-    def __cleanWindow(self):
+    def _cleanWindow(self):
         for child in self.root.winfo_children():
             child.destroy()
 
-    def __closeWindow(self):
+    def _closeWindow(self):
         self.onClose()
         self.root.destroy()
 
@@ -61,13 +61,8 @@ class View(ViewAccessControl):
 
     # métodos públicos
     def renderHome(self):
-        # abre a página de detahes do produto
-        def openDetails(*args):
-            item_id = table.focus()
-            self.renderEditProductForm(int(item_id))
-
         # limpar a janela principal
-        self.__cleanWindow()
+        self._cleanWindow()
 
         # construção do header
         homeHeader = Frame(
@@ -149,34 +144,31 @@ class View(ViewAccessControl):
             table.heading(col, text=col.title(), anchor=CENTER)
             table.column(col, width=w[n], anchor=wd[n])
             n += 1
-        for index, item in enumerate(self.storage.items):
-            if index % 2 == 0:
-                table.insert("", "end", values=item, tags=("even",), iid=index)
-            else:
-                table.insert("", "end", values=item, tags=("odd",), iid=index)
+
+        def generate_items(items):
+            for index, item in enumerate(items):
+                if index % 2 == 0:
+                    yield item, "even", index
+                else:
+                    yield item, "odd", index
+
+        for item, tag, index in generate_items(self.storage.items):
+            table.insert("", "end", values=item, tags=(tag,), iid=index)
 
         # evento de clique em cada linha
-        table.bind("<<TreeviewSelect>>", openDetails)
+        table.bind(
+            "<<TreeviewSelect>>",
+            lambda *args: self.renderEditProductForm(int(table.focus())),
+        )
 
         # Configurando as cores para as tags
         table.tag_configure("even", background=lightBlue)
         table.tag_configure("odd", background=white)
 
     def renderProductForm(self):
-        # cria um produto
-        def submitForm():
-            name = nameEntry.get()
-            description = descricao_text.get("1.0", "end").strip()
-            quantity = int(quantidade_spin.get())
-            self.__addProduct(
-                name,
-                description,
-                quantity,
-                permission=self.usersManager.authenticatedUser["permission"],
-            )
 
         # limpar a janela principal
-        self.__cleanWindow()
+        self._cleanWindow()
 
         # cabeçalho do formulário
         formHeader = Frame(self.root, width=1043, height=50, bg="green", relief="flat")
@@ -221,8 +213,14 @@ class View(ViewAccessControl):
         Label(formMain, text="Quantidade:", font="Roboto 8 bold", bg="white").grid(
             row=2, column=0, sticky="w", pady=15
         )
+
+        def generate_quantities(start, end):
+            for quantity in range(start, end + 1):
+                yield quantity
+
+        quantities = list(generate_quantities(0, 100))
         quantidade_spin = Spinbox(
-            formMain, from_=0, to=100, font="Roboto 8 bold", width=10, relief="solid"
+            formMain, values=quantities, font="Roboto 8 bold", width=10, relief="solid"
         )
         quantidade_spin.grid(row=2, column=1, pady=5, padx=10, sticky="w")
 
@@ -249,26 +247,18 @@ class View(ViewAccessControl):
             bg="green",
             fg="white",
             width=15,
-            command=submitForm,
+            command=lambda: self.__addProduct(
+                nameEntry.get(),
+                descricao_text.get("1.0", "end").strip(),
+                int(quantidade_spin.get()),
+                permission=self.usersManager.authenticatedUser["permission"],
+            ),
             relief="raised",
             overrelief="ridge",
         )
         submit_button.grid(row=0, column=1, pady=20, padx=4)
 
     def renderEditProductForm(self, id):
-        # Edita um produto
-        def submitForm():
-            name = nameEntry.get()
-            description = descricao_text.get("1.0", "end").strip()
-            quantity = int(quantidade_spin.get())
-            self.__editProduct(
-                id,
-                name,
-                description,
-                quantity,
-                permission=self.usersManager.authenticatedUser["permission"],
-            )
-
         # Deleta o produto atual
         def deleteProduct():
             name = nameEntry.get()
@@ -284,7 +274,7 @@ class View(ViewAccessControl):
                 messagebox.showinfo("Cancelado", "Ação cancelada!")
 
         # Limpar a janela principal
-        self.__cleanWindow()
+        self._cleanWindow()
 
         # Cabeçalho do formulário
         formHeader = Frame(self.root, width=1043, height=50, bg="green", relief="flat")
@@ -331,8 +321,14 @@ class View(ViewAccessControl):
         Label(formMain, text="Quantidade:", font="Roboto 8 bold", bg="white").grid(
             row=2, column=0, sticky="w", pady=15
         )
+
+        def generate_quantities(start, end):
+            for quantity in range(start, end + 1):
+                yield quantity
+
+        quantities = list(generate_quantities(0, 100))
         quantidade_spin = Spinbox(
-            formMain, from_=0, to=100, font="Roboto 8 bold", width=10, relief="solid"
+            formMain, values=quantities, font="Roboto 8 bold", width=10, relief="solid"
         )
         quantidade_spin.grid(row=2, column=1, pady=5, padx=10, sticky="w")
 
@@ -359,7 +355,13 @@ class View(ViewAccessControl):
             bg="green",
             fg="white",
             width=15,
-            command=submitForm,
+            command=lambda: self.__editProduct(
+                id,
+                nameEntry.get(),
+                descricao_text.get("1.0", "end").strip(),
+                int(quantidade_spin.get()),
+                permission=self.usersManager.authenticatedUser["permission"],
+            ),
             relief="raised",
             overrelief="ridge",
         )
@@ -385,12 +387,6 @@ class View(ViewAccessControl):
         quantidade_spin.insert(0, self.storage.items[id][3])
 
     def renderEditUserForm(self):
-        # Edita o usuário autenticado
-        def submitForm():
-            name = nameEntry.get()
-            password = passwordEntry.get()
-            self.usersManager.editUser(name, password, self.renderHome)
-
         # Deleta o usuário logado
         def deleteUser():
             confirmation = messagebox.askyesno(
@@ -403,7 +399,7 @@ class View(ViewAccessControl):
                 messagebox.showinfo("Cancelado", "Ação cancelada!")
 
         # Limpar a janela principal
-        self.__cleanWindow()
+        self._cleanWindow()
 
         # Costrução do header
         formHeader = Frame(self.root, width=1043, height=50, bg=darkBlue, relief="flat")
@@ -472,7 +468,9 @@ class View(ViewAccessControl):
             bg="green",
             fg="white",
             width=15,
-            command=submitForm,
+            command=lambda: self.usersManager.editUser(
+                nameEntry.get(), passwordEntry.get(), self.renderHome
+            ),
             relief="raised",
             overrelief="ridge",
         )
@@ -496,14 +494,8 @@ class View(ViewAccessControl):
         passwordEntry.insert(0, self.usersManager.authenticatedUser["password"])
 
     def renderLoginForm(self):
-        # função que faz o login de usuários
-        def submitForm():
-            name = nameEntry.get()
-            password = passwordEntry.get()
-            self.usersManager.loginUser(name, password, self.renderHome)
-
         # Limpar a janela principal
-        self.__cleanWindow()
+        self._cleanWindow()
 
         # Construção do header
         formHeader = Frame(self.root, width=1043, height=50, bg=darkBlue, relief="flat")
@@ -572,22 +564,17 @@ class View(ViewAccessControl):
             bg="green",
             fg="white",
             width=15,
-            command=submitForm,
+            command=lambda: self.usersManager.loginUser(
+                nameEntry.get(), passwordEntry.get(), self.renderHome
+            ),
             relief="raised",
             overrelief="ridge",
         )
         return_button.grid(row=0, column=2, pady=20, padx=4)
 
     def renderCreateUserForm(self):
-        # função que cadastra usuários
-        def submitForm():
-            name = nameEntry.get()
-            password = passwordEntry.get()
-            permission = comboPermission.get()
-            self.__addUser(name, password, permission)
-
         # limpar a janela principal
-        self.__cleanWindow()
+        self._cleanWindow()
 
         # construção do header
         formHeader = Frame(self.root, width=1043, height=50, bg=darkBlue, relief="flat")
@@ -635,7 +622,12 @@ class View(ViewAccessControl):
         Label(formMain, text="Permissão: ", font="Roboto 8 bold", bg="white").grid(
             row=2, column=0, sticky="w", pady=15, padx=(40, 0)
         )
-        options = ["leitura", "escrita"]
+
+        def generate_permissions():
+            yield "leitura"
+            yield "escrita"
+
+        options = list(generate_permissions())
         comboPermission = ttk.Combobox(formMain, values=options)
         comboPermission.grid(row=2, column=1, pady=5, padx=10, sticky="w")
         comboPermission.set("Selecione uma opção")
@@ -661,7 +653,9 @@ class View(ViewAccessControl):
             bg="green",
             fg="white",
             width=15,
-            command=submitForm,
+            command=lambda: self.__addUser(
+                nameEntry.get(), passwordEntry.get(), comboPermission.get()
+            ),
             relief="raised",
             overrelief="ridge",
         )

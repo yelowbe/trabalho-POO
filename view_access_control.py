@@ -1,9 +1,26 @@
+from abc import ABC, abstractmethod
 from tkinter import simpledialog, messagebox
 
 
-class ViewAccessControl:
+# Interface para controle de acesso
+class IAccessControl(ABC):
 
-    # decoradores
+    @abstractmethod
+    def _verifyWritePermission(func):
+        pass
+
+    @abstractmethod
+    def _validateRootPassword(func):
+        pass
+
+
+# Classe abstrata que implementa a interface
+class ViewAccessControl(IAccessControl, ABC):
+
+    def __init__(self, rootPassword):
+        self.rootPassword = rootPassword
+
+    # Implementação do decorador _verifyWritePermission
     def _verifyWritePermission(func):
         def wrapper(*args, permission):
             if permission == "leitura":
@@ -13,6 +30,7 @@ class ViewAccessControl:
 
         return wrapper
 
+    # Implementação do decorador _validateRootPassword
     def _validateRootPassword(func):
         def wrapper(self, name, password, permission):
             if permission == "escrita":
@@ -26,3 +44,11 @@ class ViewAccessControl:
             func(self, name, password, permission)
 
         return wrapper
+
+    @abstractmethod
+    def _cleanWindow(self):
+        pass
+
+    @abstractmethod
+    def _closeWindow(self):
+        pass
